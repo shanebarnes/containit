@@ -1,3 +1,4 @@
+#include <errno.h>
 #include <limits.h>
 #include <signal.h>
 #include <stdio.h>
@@ -6,14 +7,26 @@
 #include <unistd.h>
 
 void signal_handler(int sig) {
-    switch (sig) {
-        case SIGCHLD:
-            fprintf(stdout,
-                    "Child process %d has terminated\n",
-                    waitpid(-1, NULL, WNOHANG));
-            break;
-        default:
-            break;
+    int status = 0, pid;
+
+    if (sig == SIGCHLD) {
+        pid = waitpid(-1, &status, WNOHANG);
+        if (WIFEXITED(status)) {
+            fprintf(stderr,
+                    "%d: Process terminated with exit status %d\n",
+                    pid,
+                    WEXITSTATUS(status));
+        } else if (WIFSIGNALED(status)) {
+            fprintf(stderr,
+                    "%d: Process terminated by signal %d\n",
+                    pid,
+                    WTERMSIG(status));
+        } else if (WIFSTOPPED(status)) {
+            fprintf(stderr,
+                    "%d: Process stopped by signal %d\n",
+                    pid,
+                    WSTOPSIG(status));
+        }
     }
 }
 
@@ -29,12 +42,14 @@ void split_arg(char *arg, int argc, char **argv) {
     }
 }
 
-void exec_cmd(char *cmd) {
-    char *argv[64];
+void exec_arg(char *arg) {
+    char *argv[64], pid[16];
 
-    split_arg(cmd, 64, argv);
+    split_arg(arg, 64, argv);
+    sprintf(pid, "%d", getpid());
     execvp(*argv, argv);
-    exit(EXIT_FAILURE);
+    perror(pid);
+    exit(errno);
 }
 
 int main(int argc, char **argv) {
@@ -49,9 +64,9 @@ int main(int argc, char **argv) {
         if (pid == -1) {
             perror("Error");
         } else if (pid == 0) {
-            exec_cmd(argv[i]);
+            exec_arg(argv[i]);
         } else {
-            fprintf(stdout, "Creating child process %d (%s)\n", pid, argv[i]);
+            fprintf(stdout, "%d: Created child process (%s)\n", pid, argv[i]);
             pidv[pidc] = pid;
             pidc++;
         }
@@ -65,8 +80,8 @@ int main(int argc, char **argv) {
     }
 
     while (pidc > 0) {
-        fprintf(stdout, "Destroying child process %d\n", pidv[pidc-1]);
         kill(pidv[pidc-1], SIGKILL);
+        fprintf(stdout, "%d: Destroyed child process\n", pidv[pidc-1]);
         pidc--;
     }
 

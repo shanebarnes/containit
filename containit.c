@@ -18,7 +18,7 @@ void signal_handler(int sig) {
 }
 
 void split_arg(char *arg, int argc, char **argv) {
-    char *pch = NULL, *tok = " \t\n";
+    char *tok = " \t\n";
     int i = 0;
 
     if (argc > i) {

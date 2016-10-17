@@ -91,7 +91,7 @@ int main(int argc, char **argv) {
             }
         }
 
-        for (i = 2; resp != TERM_RESPONSE_INVALID && i < argc; i++) {
+        for (i = 2; (resp != TERM_RESPONSE_INVALID) && (i < argc); i++) {
             pid = fork();
 
             if (pid == -1) {

@@ -45,26 +45,41 @@ void signal_handler(int sig) {
     }
 }
 
-void split_arg(char *arg, int argc, char **argv) {
-    char *tok = " \t\n";
-    int i = 0;
+void split_arg(char *arg, char *file, char *farg) {
+    char *tok = " \t\n", *pch = NULL;
+    size_t len = strlen(arg), off = 0;
 
-    if (argc > i) {
-        argv[i] = strtok(arg, tok);
-        while (argv[i] != NULL && i < argc) {
-            argv[++i] = strtok(NULL, tok);
+    *file = '\0';
+    *farg = '\0';
+    pch = strpbrk(arg, tok);
+
+    if (pch != NULL) {
+        off = pch - arg;
+        strncat(file, arg, off);
+
+        if (len > (off + 1)) {
+            strncat(farg, arg + off + 1, len - off - 1);
         }
+    } else {
+        strncpy(file, arg, len);
     }
 }
 
 void exec_arg(char *arg) {
-    char *argv[64], pid[16];
+    char *argv[3], file[1024], farg[1024], pid[16];
 
-    split_arg(arg, 64, argv);
     sprintf(pid, "%d", getpid());
-    execvp(*argv, argv);
-    perror(pid);
-    exit(errno);
+    if (strlen(arg) < 1024) {
+        split_arg(arg, file, farg);
+        argv[0] = strlen(file) > 0 ? file : NULL;
+        argv[1] = strlen(farg) > 0 ? farg : NULL;
+        argv[2] = NULL;
+        execvp(*argv, argv);
+        perror(pid);
+        exit(errno);
+    } else {
+        fprintf(stderr, "%s: Error: Argument length is too large\n", pid);
+    }
 }
 
 int main(int argc, char **argv) {
@@ -122,6 +137,7 @@ int main(int argc, char **argv) {
 
         while (pidc > 0) {
             if (pidv[pidc-1] != tpid ) {
+                // @todo Any descendents of the child must also be killed.
                 kill(pidv[pidc-1], SIGKILL);
                 waitpid(pidv[pidc-1], NULL, 0);
             }

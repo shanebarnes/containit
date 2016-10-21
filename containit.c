@@ -52,43 +52,32 @@ void signal_handler(int sig)
     }
 }
 
-void split_arg(char *arg, char *file, char *farg)
+void split_arg(char *arg, int argc, char **argv)
 {
-    char *tok = " \t\n", *pch = NULL;
-    size_t len = strlen(arg), off = 0;
+    char *tok = " \t\n";
+    int i = 0;
 
-    *file = '\0';
-    *farg = '\0';
-    pch = strpbrk(arg, tok);
-
-    if (pch != NULL)
+    if (argc > 0)
     {
-        off = pch - arg;
-        strncat(file, arg, off);
-
-        if (len > (off + 1))
+        argv[i] = strtok(arg, tok);
+        while ((argv[i] != NULL) && (i < argc))
         {
-            strncat(farg, arg + off + 1, len - off - 1);
+            argv[++i] = strtok(NULL, tok);
         }
-    }
-    else
-    {
-        strncpy(file, arg, len);
     }
 }
 
 void exec_arg(char *arg)
 {
-    char *argv[3], file[1024], farg[1024], pid[16];
+    char *argv[512], copy[1024], pid[16];
 
     sprintf(pid, "%d", getpid());
-    if (strlen(arg) < 1024)
+    if (strlen(arg) < (sizeof(copy) / sizeof(copy[0])))
     {
-        split_arg(arg, file, farg);
-        argv[0] = strlen(file) > 0 ? file : NULL;
-        argv[1] = strlen(farg) > 0 ? farg : NULL;
-        argv[2] = NULL;
+        strncpy(copy, arg, sizeof(copy) / sizeof(copy[0]) - 1);
+        split_arg(arg, sizeof(argv) / sizeof(argv[0]), argv);
         execvp(*argv, argv);
+
         perror(pid);
         exit(errno);
     }

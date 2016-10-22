@@ -247,6 +247,8 @@ int killchildren(pid_t cpid)
 
         closedir(dir);
     }
+#else
+    fprintf(stderr, "%d: %s\n", cpid, strerror(ENOTSUP));
 #endif
     return ret;
 }

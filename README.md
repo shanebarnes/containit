@@ -1,5 +1,27 @@
 # containit
 
+| [Latest][tag-link] | [License][lic-link] |
+| :----------------: | :-----------------: |
+| ![tag-badge]       | ![lic-badge]        |
+
+[lic-badge]: https://img.shields.io/github/license/shanebarnes/containit.svg "License"
+[lic-link]: https://github.com/shanebarnes/containit/blob/master/LICENSE.md "License"
+[tag-badge]: https://img.shields.io/github/tag/shanebarnes/containit.svg "Latest"
+[tag-link]: https://github.com/shanebarnes/containit/releases "Latest"
+
+## Build Status
+
+| [Linux][lin-link] | [Macintosh][mac-link] | [Windows][win-link] |
+| :---------------: | :-------------------: | :-----------------: |
+| ![lin-badge]      | ![mac-badge]          | ![win-badge]        |
+
+[lin-badge]: https://travis-ci.org/shanebarnes/containit.svg?branch=master "Travis build status"
+[lin-link]:  https://travis-ci.org/shanebarnes/containit "Travis build status"
+[mac-badge]: https://travis-ci.org/shanebarnes/containit.svg?branch=master "Travis build status"
+[mac-link]:  https://travis-ci.org/shanebarnes/containit "Travis build status"
+[win-badge]: https://ci.appveyor.com/api/projects/status/7v1u5mbgu2acqn50/branch/master "AppVeyor build status"
+[win-link]:  https://ci.appveyor.com/project/shanebarnes/containit/branch/master "AppVeyor build status"
+
 ## Synopsis
 
 containit is a process container that waits for one or more child processes to

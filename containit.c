@@ -1,3 +1,13 @@
+/**
+ * @file      containit.c
+ * @brief     A simple process manager that monitors a group of processes that
+ *            are related to a project (e.g., a multi-process Docker container).
+ * @author    Shane Barnes
+ * @date      15 Oct 2016
+ * @copyright Copyright 2016 Shane Barnes. All rights reserved.
+ *            This project is released under the BSD license.
+ */
+
 #include <ctype.h>
 #include <errno.h>
 #if defined(__linux__)

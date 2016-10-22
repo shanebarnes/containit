@@ -1,3 +1,4 @@
+#include <ctype.h>
 #include <errno.h>
 #if defined(__linux__)
     #include <dirent.h>
@@ -6,7 +7,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <strings.h>
 #include <sys/sysctl.h>
 #include <sys/wait.h>
 #include <unistd.h>
@@ -20,6 +20,7 @@ enum term_resp
 };
 
 int tpid = 0;
+int texit = 0;
 
 void signal_handler(int sig)
 {
@@ -30,6 +31,7 @@ void signal_handler(int sig)
         tpid = waitpid(-1, &status, WNOHANG);
         if (WIFEXITED(status))
         {
+            texit += WEXITSTATUS(status);
             fprintf(stderr,
                     "%d: Process terminated with exit status %d\n",
                     tpid,
@@ -52,38 +54,86 @@ void signal_handler(int sig)
     }
 }
 
-void split_arg(char *arg, int argc, char **argv)
+int split_arg(char *arg, int argc, char **argv)
 {
-    char *tok = " \t\n";
-    int i = 0;
+    int ret = 0, count = 0;
+    char delim = ' ', *head = arg, *pos = head, *tail = arg + strlen(arg);
 
-    if (argc > 0)
+    while ((ret < argc) && (pos <= tail))
     {
-        argv[i] = strtok(arg, tok);
-        while ((argv[i] != NULL) && (i < argc))
+        switch (*pos)
         {
-            argv[++i] = strtok(NULL, tok);
+            case ' ':
+                if (delim == ' ')
+                {
+                    *pos = '\0';
+                    if (count > 0)
+                    {
+                        argv[ret++] = head;
+                        count = 0;
+                    }
+                    head = pos + 1;
+                }
+                break;
+            case '"':
+            case '\'':
+                if (delim == *pos)
+                {
+                    *pos = '\0';
+                    delim = ' ';
+                }
+                else
+                {
+                    *pos = '\0';
+                    delim = *pos;
+                }
+                if (count > 0)
+                {
+                    argv[ret++] = head;
+                    count = 0;
+                }
+                head = pos + 1;
+                break;
+            case '\0':
+                if ((head < pos) && (count > 0))
+                {
+                    argv[ret++] = head;
+                }
+                break;
+            default:
+                if (isalnum(*pos))
+                {
+                    count++;
+                }
+                break;
         }
+
+        pos++;
     }
+
+    return ret;
 }
 
 void exec_arg(char *arg)
 {
+    int argc = 0;
     char *argv[512], copy[1024], pid[16];
+    char *env[] = { getenv("HOME"), getenv("PATH"), getenv("USER"), NULL };
 
     sprintf(pid, "%d", getpid());
     if (strlen(arg) < (sizeof(copy) / sizeof(copy[0])))
     {
         strncpy(copy, arg, sizeof(copy) / sizeof(copy[0]) - 1);
-        split_arg(arg, sizeof(argv) / sizeof(argv[0]), argv);
-        execvp(*argv, argv);
+        argc = split_arg(copy, sizeof(argv) / sizeof(argv[0]) - 1, argv);
+        argv[argc] = NULL;
+        execve(argv[0], argv, env);
 
         perror(pid);
         exit(errno);
     }
     else
     {
-        fprintf(stderr, "%s: Error: Argument length is too large\n", pid);
+        fprintf(stderr, "%s: %s\n", pid, strerror(E2BIG));
     }
 }
 
@@ -157,7 +207,7 @@ int killchildren(pid_t cpid)
             if ((entry->d_type == DT_DIR) &&
                 (sscanf(entry->d_name, "%d", &oid) == 1))
             {
-                sprintf(fname, "%s/%s/status", "/proc", entry->d_name);
+                sprintf(fname, "/proc/%s/status", entry->d_name);
                 if ((file = fopen(fname, "r")) != NULL)
                 {
                     while (getline(&line, &len, file) != -1)
@@ -194,6 +244,7 @@ int main(int argc, char **argv)
     int ret = argc > 2 ? EXIT_SUCCESS : EXIT_FAILURE;
     enum term_resp resp = TERM_RESPONSE_NULL;
     int i, pid, pidc = 0, pidv[131072];
+    int backoff = 1;
 
     signal(SIGCHLD, signal_handler);
 
@@ -275,7 +326,22 @@ int main(int argc, char **argv)
 
         if (resp == TERM_RESPONSE_RESTART)
         {
-            usleep(1000*1000);
+            if (texit > 0)
+            {
+                backoff = (backoff > 10 ? 10: backoff + 1);
+            }
+            else
+            {
+                backoff = 1;
+            }
+            texit = 0;
+
+            fprintf(stderr,
+                    "%d: Waiting %d %s to restart child processes\n",
+                    getpid(),
+                    backoff,
+                    backoff > 1 ? "seconds" : "second");
+            usleep(backoff * 1000 * 1000);
         }
     } while (resp == TERM_RESPONSE_RESTART);
 

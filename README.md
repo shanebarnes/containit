@@ -9,9 +9,11 @@ containit to kill all remaining child processes and stop or restart immediately.
 
 ## Example
 
-./containit stop-on-term "cat" "sleep 3"
+./containit stop-on-term "/bin/cat" "/bin/sleep 3"
 
-./containit restart-on-term "cat" "sleep 3" "date"
+./containit restart-on-term "/bin/cat" "/bin/sleep 3" "/bin/date"
+
+./containit restart-on-term "/usr/sbin/nginx -g 'daemon off;'"
 
 ## Motivation
 

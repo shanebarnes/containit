@@ -17,7 +17,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/sysctl.h>
+#if !defined(__CYGWIN__)
+    #include <sys/sysctl.h>
+#endif
 #include <sys/wait.h>
 #include <unistd.h>
 

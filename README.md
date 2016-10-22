@@ -1,5 +1,8 @@
 # containit
 
+A simple process manager that monitors a group of processes that are related to
+a project.
+
 | [Latest][tag-link] | [License][lic-link] |
 | :----------------: | :-----------------: |
 | ![tag-badge]       | ![lic-badge]        |

@@ -22,7 +22,7 @@ a project.
 [lin-link]:  https://travis-ci.org/shanebarnes/containit "Travis build status"
 [mac-badge]: https://travis-ci.org/shanebarnes/containit.svg?branch=master "Travis build status"
 [mac-link]:  https://travis-ci.org/shanebarnes/containit "Travis build status"
-[win-badge]: https://ci.appveyor.com/api/projects/status/7v1u5mbgu2acqn50/branch/master "AppVeyor build status"
+[win-badge]: https://ci.appveyor.com/api/projects/status/87pc6w07pqgwhax8/branch/master "AppVeyor build status"
 [win-link]:  https://ci.appveyor.com/project/shanebarnes/containit/branch/master "AppVeyor build status"
 
 ## Synopsis

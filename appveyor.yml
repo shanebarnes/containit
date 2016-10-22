@@ -1,0 +1,16 @@
+environment:
+  matrix:
+    - compiler: cygwin64
+      config: release
+
+install:
+  - set PATH=c:\%compiler%\bin;%PATH%
+  - wget raw.github.com/transcode-open/apt-cyg/master/apt-cyg
+  - chmod +x apt-cyg
+  - copy apt-cyg c:\%compiler%\bin
+  - bash c:\%compiler%\bin\apt-cyg install cmake
+
+build_script:
+  - cmake -H. -Bbuild
+  - cd build
+  - make

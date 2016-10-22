@@ -31,6 +31,9 @@ enum term_resp
     TERM_RESPONSE_INVALID = 3
 };
 
+static const char *version = "0.1.0";
+static const char *date    = "Oct 22 2016 16:28:00";
+
 int tpid = 0;
 int texit = 0;
 
@@ -318,13 +321,19 @@ int main(int argc, char **argv)
         }
         else
         {
-            fprintf(stderr,
-                    "\n%d: No child processes were created\n",
-                    getpid());
+            if (argc > 1)
+            {
+                fprintf(stderr,
+                        "\n%d: No child processes were created\n",
+                        getpid());
+            }
             fprintf(stderr,
                     "\nusage: %s [restart-on-term | stop-on-term] "
-                    "[program 1] [program 2] ...\n\n",
-                    argv[0]);
+                    "[program 1] [program 2] ...\n"
+                    "version: %s (%s)\n\n",
+                    argv[0],
+                    version,
+                    date);
         }
 
         while (pidc > 0)

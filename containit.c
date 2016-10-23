@@ -31,8 +31,9 @@ enum term_resp
     TERM_RESPONSE_INVALID = 3
 };
 
-static const char *version = "0.1.0";
-static const char *date    = "Oct 22 2016 16:28:00";
+static const char *VERSION = "0.1.1";
+static const char *DATE    = "Oct 22 2016 20:58:00";
+extern char **environ;
 
 int tpid = 0;
 int texit = 0;
@@ -133,7 +134,6 @@ void exec_arg(char *arg)
 {
     int argc = 0;
     char *argv[512], copy[1024], pid[16];
-    char *env[] = { getenv("HOME"), getenv("PATH"), getenv("USER"), NULL };
 
     sprintf(pid, "%d", getpid());
     if (strlen(arg) < (sizeof(copy) / sizeof(copy[0])))
@@ -141,7 +141,7 @@ void exec_arg(char *arg)
         strncpy(copy, arg, sizeof(copy) / sizeof(copy[0]) - 1);
         argc = split_arg(copy, sizeof(argv) / sizeof(argv[0]) - 1, argv);
         argv[argc] = NULL;
-        execve(argv[0], argv, env);
+        execve(argv[0], argv, environ);
 
         perror(pid);
         exit(errno);
@@ -234,6 +234,7 @@ int killchildren(pid_t cpid)
                         }
                     }
 
+                    free(line);
                     fclose(file);
 
                     if (ppid == cpid)
@@ -329,11 +330,11 @@ int main(int argc, char **argv)
             }
             fprintf(stderr,
                     "\nusage: %s [restart-on-term | stop-on-term] "
-                    "[program 1] [program 2] ...\n"
+                    "\"file1 arg1 arg2 ...\" \"file2 arg1 arg2 ...\" ...\n"
                     "version: %s (%s)\n\n",
                     argv[0],
-                    version,
-                    date);
+                    VERSION,
+                    DATE);
         }
 
         while (pidc > 0)

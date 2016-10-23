@@ -31,8 +31,8 @@ enum term_resp
     TERM_RESPONSE_INVALID = 3
 };
 
-static const char *VERSION = "0.1.1";
-static const char *DATE    = "Oct 22 2016 20:58:00";
+static const char *VERSION = "0.1.2";
+static const char *DATE    = "Oct 22 2016 21:22:00";
 extern char **environ;
 
 int tpid = 0;
@@ -235,6 +235,8 @@ int killchildren(pid_t cpid)
                     }
 
                     free(line);
+                    line = NULL;
+                    len = 0;
                     fclose(file);
 
                     if (ppid == cpid)

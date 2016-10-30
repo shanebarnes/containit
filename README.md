@@ -1,3 +1,5 @@
+![](containit.png)
+
 # containit
 
 A simple process manager that monitors a group of processes that are related to
